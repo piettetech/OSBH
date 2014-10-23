@@ -26,6 +26,7 @@ The application can be found under the Spark Web IDE as "OSBH"
 Login to your Spark accuont at www.spark.io/build
 Select "Libraries"
 Select "OSBH"
+  NOTE: app-osbh.ino will be the first in the list
 Select "USE THIS EXAMPLE"
 Select "Save"
 Select "Verify"
