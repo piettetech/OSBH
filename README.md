@@ -24,12 +24,12 @@ The application can be found under the Spark Web IDE as "OSBH"
 
 ```
 Login to your Spark accuont at www.spark.io/build
-Select Libraries
-Select OSBH
-Select USE THIS EXAMPLE
-Select Save
-Select Verify
-Select Flash
+Select "Libraries"
+Select "OSBH"
+Select "USE THIS EXAMPLE"
+Select "Save"
+Select "Verify"
+Select "Flash"
 ```
 
 **Hardware**
@@ -41,5 +41,5 @@ The following diagram shows you how to connect your sensors to the core
 --------
 This application contains several libraries, so some of the libraries have their own license.  Check the header of the .cpp and .h files for the specific details.
 
-The main application is released under the GNU General Public License V3.0
+The main application is released under the [GNU General Public License v3.0](./LICENSE)
 
