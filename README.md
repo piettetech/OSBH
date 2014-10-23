@@ -35,6 +35,6 @@ Select Flash
 **Hardware**
 --------
 The following diagram shows you how to connect your sensors to the core
-![alt tag](github.com/piettetech/OSBH/blob/master/OSBH_Wiring.png)
+![alt tag](./OSBH_Wiring.png)
 
 
