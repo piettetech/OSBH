@@ -30,10 +30,10 @@
 
 #include "application.h"
 #include "math.h"
-#include "PietteTech_Phant.h"
-#include "PietteTech_DSX_U.h"
-#include "PietteTech_DHT_U.h"
-#include "PietteTech_DHT.h"
+#include "OSBH/PietteTech_Phant.h"
+#include "OSBH/PietteTech_DSX_U.h"
+#include "OSBH/PietteTech_DHT_U.h"
+#include "OSBH/PietteTech_DHT.h"
 
 /**************************************************************************/
 /*!
