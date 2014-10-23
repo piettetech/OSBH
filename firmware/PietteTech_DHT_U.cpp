@@ -1,5 +1,5 @@
 /*
- * PietteTech_DHT_U
+ *  PietteTech_DHT_U
  *
  *  Adaption of Adafruit DHT Unified driver to Spark and DHT library
  *

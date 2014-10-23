@@ -1,5 +1,5 @@
 /*
- * PietteTech_Sensor.h
+ *  PietteTech_Sensor.h
  *
  *  Adaption of Adafruit Unified driver to Spark Core
  *

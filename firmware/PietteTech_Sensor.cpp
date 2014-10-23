@@ -1,5 +1,5 @@
 /*
- * PietteTech_Sensor.cpp
+ *  PietteTech_Sensor.cpp
  *
  *  Adaption of Adafruit Unified driver to Spark Core
  *
@@ -9,8 +9,8 @@
  *  Updated by S. Piette (Piette Technologies)
  * 	Added Serial.print methods for output of the sensor and event details
  *
- * Intentionally modeled after Adafruit_Sensor.cpp
- * https://github.com/adafruit/Adafruit_Sensor/blob/master/include/Adafruit_Sensor.h
+ *  Intentionally modeled after Adafruit_Sensor.cpp
+ *  https://github.com/adafruit/Adafruit_Sensor/blob/master/include/Adafruit_Sensor.h
  *
  */
 
