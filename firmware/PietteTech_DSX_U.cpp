@@ -1,10 +1,17 @@
 /*
  * PietteTech_DSX_U
  *
- * Port of Adafruit Unified driver to Spark and DS OneWire sensors
+ *  Adaption of Adafruit Unified driver to Spark and DS OneWire sensors
  *
- * Adapted by S Piette (Piette Technologies)
- * October 3, 2014
+ *  Adapted by Scott Piette (Piette Technologies, LTD)
+ *  Copyright (c) 2014 Scott Piette (scott.piette@gmail.com)
+ *  Developed for the Open Source Beehives Project
+ *       (http://www.opensourcebeehives.net)
+ *
+ *  This adaptation is released under the following license:
+ *	GPL v3 (http://www.gnu.org/licenses/gpl.html)
+ *
+ *  October 3, 2014
  * 	Added support for naming each sensor object
  * 	Set name in setType method for identifying sensor
  *

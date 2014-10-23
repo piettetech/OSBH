@@ -1,7 +1,12 @@
 /*
  * PietteTech_Sensor.cpp
  *
- * Updated by S. Piette (Piette Technologies)
+ *  Adaption of Adafruit Unified driver to Spark Core
+ *
+ *  Adapted by Scott Piette (Piette Technologies, LTD)
+ *  for the Open Source Beehives Project (http://www.opensourcebeehives.net)
+ *
+ *  Updated by S. Piette (Piette Technologies)
  * 	Added Serial.print methods for output of the sensor and event details
  *
  * Intentionally modeled after Adafruit_Sensor.cpp

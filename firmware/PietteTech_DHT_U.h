@@ -1,10 +1,17 @@
 /*
- * PietteTech_DHT_U
+ *  PietteTech_DHT_U
  *
- * Port of Adafruit DHT Unified driver to Spark and DHT library
+ *  Adaption of Adafruit DHT Unified driver to Spark and DHT library
  *
- * Adapted by S Piette (Piette Technologies)
- * October 3, 2014
+ *  Adapted by Scott Piette (Piette Technologies, LTD)
+ *  Copyright (c) 2014 Scott Piette (scott.piette@gmail.com)
+ *  Developed for the Open Source Beehives Project
+ *       (http://www.opensourcebeehives.net)
+
+ *  This adaptation is released under the following license:
+ *	GPL v3 (http://www.gnu.org/licenses/gpl.html)
+ *
+ *  October 3, 2014
  * 	Added support for using this object as Temperature or Humidity
  * 	Set senseType in setType method to a define in PietteTech_Sensor.h
  * 	Added support for naming each sensor object
@@ -50,7 +57,6 @@ public:
     PietteTech_DHT_U();
     
     void begin(PietteTech_DHT* dht, uint8_t dhtType, int32_t sensorId = -1, int32_t senseType = SENSOR_TYPE_AMBIENT_TEMPERATURE, char *sensorName = NULL);
-//    void setType(int32_t senseType = SENSOR_TYPE_AMBIENT_TEMPERATURE, char *sensorName = NULL);
     void getEvent(sensors_event_t* event);
     void getSensor(sensor_t* sensor);
 

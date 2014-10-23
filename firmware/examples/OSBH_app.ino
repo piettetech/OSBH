@@ -1,27 +1,28 @@
 /**************************************************************************/
 /*!
-    Open Source Bee Hive Sensor Kit v1.0
+    Open Source Beehives Sensor Kit Alpha v1.0
 
     Written by Scott Piette (Piette Technologies) October 4, 2014
-    For Open Source Bee Hive Project
+    Copyright (c) 2014 Scott Piette (scott.piette@gmail.com)
+    Developed for the Open Source Beehives Project
+         (http://www.opensourcebeehives.net)
 
-    Bee Hive monitor using DHT and DS sensors
+    This software is released under the following license:
+  	GPL v3 (http://www.gnu.org/licenses/gpl.html)
+
+    Beehive monitor using DHT and DS sensors
     Written for Spark Core (www.spark.io)
-
-    This work is licensed under a 
-        Creative Commons Attribution-Share-Alike 4.0 License CC-BY-SA
-        http://creativecommons.org/licenses/by-sa/4.0/
     
     Depends on the following libraries:
-    - Modified Adafruit Base Class Sensor Library: https://github.com/mtnscott/PietteTech_Sensor
+    - Modified Adafruit Base Class Sensor Library: https://github.com/piettetech/PietteTech_Sensor
       > Original Adafruit Unified Sensor Library: https://github.com/adafruit/Adafruit_Sensor
-    - DHT Sensor Library: https://github.com/mtnscott/PietteTech_DHT
+    - DHT Sensor Library: https://github.com/piettetech/PietteTech_DHT
       > Original idDHT Sensor Library: https://github.com/niesteszeck
-    - DSX_U Unified Sensor Library: https://github.com/mtnscott/PietteTech_DSX_U
+    - DSX_U Unified Sensor Library: https://github.com/piettetech/PietteTech_DSX_U
       > Original Adafruit DHT Unified Sensor Library: https://github.com/adafruit/Adafruit_DHT_Unified
-    - DHT_U Unified Sensor Library: https://github.com/mtnscott/PietteTech_DHT_U
+    - DHT_U Unified Sensor Library: https://github.com/piettetech/PietteTech_DHT_U
       > Original Adafruit DHT Unified Sensor Library: https://github.com/adafruit/Adafruit_DHT_Unified
-    - Phant Library: https://github.com/mtnscott/PietteTech_Phant
+    - Phant Library: https://github.com/piettetech/PietteTech_Phant
       > Original SparkFun Phant Library: https://github.com/sparkfun/phant-arduino
     - OneWire Library: https://github.com/Hotaman/OneWireSpark/fork
 */
@@ -40,21 +41,36 @@
 */
 /**************************************************************************/
 //#define CLEAR_STREAM_ON_START
-#define OSBH_RECONNECT_LIMIT    6       // # times to try sending data
-#define OSBH_REPORT_FREQUENCY 10 * 60	// Report data every ## seconds
-//#define WAIT_FOR_KEYPRESS
-#define SERIAL_DEBUG  1		// 1 = timing, 2 = sensor
+#define OSBH_RECONNECT_LIMIT    10       // # times to try sending data
+#define OSBH_REPORT_FREQUENCY 10 * 60	 // Report data every ## seconds
 
+/**************************************************************************/
+/*!
+        Program debug options
+*/
+/**************************************************************************/
+//#define WAIT_FOR_KEYPRESS		 // wait for keypress in setup
+#define SERIAL_DEBUG  1		         // 1 = timing, 2 = sensor
 #if defined(SERIAL_DEBUG)
 #define D(x) x
 #else
 #define D(x)
 #endif
 #if (SERIAL_DEBUG > 1)
-#define D2(x) x
+#define DD2(x) x
 #else
-#define D2(x)
+#define DD2(x)
 #endif
+
+/**************************************************************************/
+/*!
+        Loop Timing Debug Variables
+*/
+/**************************************************************************/
+int _loopErrorCount;	        // # times (_loopReEntryTime * 2) is exceeded
+int _loopCycleCount;	        // # times we have entered the loop
+unsigned long _loopReEntryTime;	// average time to re-enter loop (first 50 samples)
+unsigned long _exitLoopTime;	// time we exit our loop
 
 /**************************************************************************/
 /*!
@@ -65,10 +81,10 @@
 #define DHTTYPE       DHT22     // DHT 22 (AM2302)
 #define DHTBPIN       4         // Pin for external DHT sensor.
 #define DHTBTYPE      DHT22     // DHT 22 (AM2301)
-void dht_wrapper(); // must be declared before object initialization
+void dht_wrapper();             // must be declared before object initialization
 PietteTech_DHT dht(DHTPIN, DHTTYPE, dht_wrapper);
 void dht_wrapper() { dht.isrCallback(); }// This wrapper calls isr
-void dht_wrapperB(); // must be declared before object initialization
+void dht_wrapperB();            // must be declared before object initialization
 PietteTech_DHT dhtB(DHTBPIN, DHTBTYPE, dht_wrapperB);
 void dht_wrapperB() { dhtB.isrCallback(); }// This wrapper calls isr
 
@@ -80,7 +96,7 @@ void dht_wrapperB() { dhtB.isrCallback(); }// This wrapper calls isr
                and one for Humidity.
 */
 /**************************************************************************/
-PietteTech_DHT_U _dht_u[4];        // Inside & Outside Temperature & Humidity
+PietteTech_DHT_U _dht_u[4];          // Inside & Outside Temperature & Humidity
 
 /**************************************************************************/
 /*!
@@ -88,17 +104,17 @@ PietteTech_DHT_U _dht_u[4];        // Inside & Outside Temperature & Humidity
 */
 /**************************************************************************/
 #define MAX_DSX_DEVICES  2           // Max # devices we can scan for
-#define ONEWIREPIN   2           // Pin connected to sensors.
-OneWire one(ONEWIREPIN);         // - 4.7K pull-up resistor to 3.3v necessary
+#define ONEWIREPIN   2               // Pin connected to sensors.
+OneWire one(ONEWIREPIN);             // - 4.7K pull-up resistor to 3.3v necessary
 uint8_t ds_addr[8*MAX_DSX_DEVICES];  // Rom addresses of DSXXXX sensors
-byte ds_num;                     // # sensors found
+byte ds_num;                         // # sensors found
 
 /**************************************************************************/
 /*!
         DSX_U Driver
 */
 /**************************************************************************/
-PietteTech_DSX_U _dsx[MAX_DSX_DEVICES];   // Two remote Hive sensors
+PietteTech_DSX_U _dsx[MAX_DSX_DEVICES];   // Two remote beehive sensors
 
 /**************************************************************************/
 /*!
@@ -132,27 +148,60 @@ void scanOneWire()
     Unified Sensor Object Array variables and defines
 */
 /**************************************************************************/
-#define MAX_SENSORS 6	// 2 1-Wire + 2 DHT @ 2x = 6 sensors
+#define MAX_SENSORS 6	                 // 2 1-Wire + 2 DHT @ 2x = 6 sensors
 PietteTech_Sensor *_sensor[MAX_SENSORS]; // pointers to sensor objects
-uint8_t _num_sensors;	// How many did we create
-int sensorId;		// System unique sensor Id
+uint8_t _num_sensors;	                 // How many did we create
+int sensorId;		                 // System unique sensor Id
+uint32_t delayMS;	                 // Max delay for all connected sensors
+unsigned long next_sensor_sample_time;	 // next time to read sensors
 
-uint32_t delayMS;	// Max delay for all connected sensors
-unsigned long next_db_update_time;	// next time to update phant db
-unsigned long next_sensor_sample_time;	// next time to read sensors
+/**************************************************************************/
+/*!
+    OSBH global variables and defines
+*/
+/**************************************************************************/
 #define ONE_DAY_MILLIS (24 * 60 * 60 * 1000)
 unsigned long lastSync = millis();	// last time we sync'd time
 
 /**************************************************************************/
 /*!
     Phant database objects and variables
+    You will need to create your own data stream on the phant server
+    and place the proper values into the creation line below
+
+    <<host>>  This is the host for your phant data stream
+	      examples =
+			    data.osbh.smartcitizen.me
+			    data.sparkfun.com
+
+    <<Public Key>>  Public key provided when you create the stream
+    <<Private Key>> Private key provided when you create the stream
+
 */
 /**************************************************************************/
-//Phant::Stream stream1("data.sparkfun.com", "0lz6AZVwJySgrrEEJw96", "D6nV1movXyHpnndd7PWr");
-Phant::Stream stream1("data.osbh.smartcitizen.me", "2gVw0WQ0LbCVEKyvwKWLs4wyv14", "4oK4wYnwdBhRZJmEMJWYizZ043z");
-int _ret;       // Return error code
-D(int _s;)      // Count of stream send attempts
+//Phant::Stream stream1("<<host>>", "<<Public Key>>", "<<Private Key>>");
+Phant::Stream stream1("data.sparkfun.com", "OGw6o7Z7AWsWVEZlEjj6", "8b2zAJPJrNFoB2VE2qqZ");
+int _ret;                                // Return error code
+D(int _s;)                               // Count of stream send attempts
+unsigned long next_db_update_time;	 // next time to update phant db
 
+
+/**************************************************************************/
+/*
+        Function:  SerialCurrentTime
+        This fixes a bug in Spark Time where there is a line feed
+        on the end of the string.
+ */
+/**************************************************************************/
+void SerialCurrentTime() {
+    D(char buf [50];)
+    D(char *_c;)
+    D(sprintf(buf, "[%s", Time.timeStr().c_str());)
+    D(for(_c = buf; ((*_c != '\r') && (*_c != '\n') && (*_c != 0)); _c++) ;)
+    D(*_c++ = ']';)
+    D(*_c = 0;)
+    D(Serial.print(buf);)
+}
 
 /**************************************************************************/
 /*
@@ -162,23 +211,25 @@ D(int _s;)      // Count of stream send attempts
 void setup() {
     int n;
 
-    D(Serial.begin(9600);)
+    Serial.begin(9600);
 #if defined(WAIT_FOR_KEYPRESS)
-    D(while(!Serial.available()) {)
-        D(Serial.println("Press any key to begin");)
-        D(delay(1000);)
-    D(})
+    while(!Serial.available()) {
+	delay(500);
+	SerialCurrentTime();
+	Serial.println(" press any key to begin");
+	Spark.process();  // keep the spark happy
+	delay(500);
+    }
 #endif
 
     // Initialize device.
-    D(Serial.println("\n\rOpen Source Bee Hive Monitor v0.1");)
-    D(Serial.println("Written by Scott Piette (Piette Technologies), October 2014");)
-    D(Serial.print("\n\r");)
+    Serial.println("\n\rOpen Source Beehives Sensor Kit Alpha v1.0");
+    Serial.print("\n\r");
 
     // Scan the OneWire bus for devices
-    D(Serial.print("Scanning for DSX devices - ");)
+    Serial.print("Scanning for DSX devices - ");
     scanOneWire();
-    D(Serial.print("found: "); Serial.print(ds_num); Serial.println(" sensors.");)
+    Serial.print("found: "); Serial.print(ds_num); Serial.println(" sensors.");
 
     // Setup Sensor Objects for each one-wire device found
     char xname[12];
@@ -189,7 +240,7 @@ void setup() {
         _sensor[_num_sensors++] = &_dsx[n];
     }
 
-    D(Serial.println("Setting up DHT22 inside & outside sensors.");)
+    Serial.println("Setting up DHT22 inside & outside sensors.");
     
     // Setup DHT objects for each DHT sensor
     _dht_u[0].begin(&dht, DHTTYPE,  ++sensorId, SENSOR_TYPE_AMBIENT_TEMPERATURE, "tempc_core");
@@ -203,7 +254,7 @@ void setup() {
     sensor_t sensor;
     for(n = 0; n < _num_sensors; n++) {
         _sensor[n]->getSensor(&sensor);
-        D2(_sensor[n]->printSensorDetail(&sensor);)
+        DD2(_sensor[n]->printSensorDetail(&sensor);)
         // Set delay between sensor readings based on sensor details.
         delayMS = sensor.min_delay / 1000;
     }
@@ -219,15 +270,15 @@ void setup() {
 #if defined(CLEAR_STREAM_ON_START)
     //clearing previous stream values
     while(!(_ret = stream1.clearStream())) {
-    	D(Serial.println("Stream could not be cleared (connection failed)");)
+    	Serial.println("Stream could not be cleared (connection failed)");
         delay(5000);
         _ts = millis();
     }
-    D(Serial.println("Stream successfully cleared");)
-    D(Serial.print("Time to clear stream = ");)
-    D(float _f = (millis() - _ts) / 1000;)
-    D(Serial.print(_f, 2);)
-    D(Serial.println("s");)
+    Serial.println("Stream successfully cleared");
+    Serial.print("Time to clear stream = ");
+    float _f = (millis() - _ts) / 1000;
+    Serial.print(_f, 2);
+    Serial.println("s");
 #endif      // CLEAR_STREAM_ON_START
 
     // Setup the time for the next sensor read and database update
@@ -243,10 +294,46 @@ void setup() {
 void loop() {
 
     unsigned long curTime = millis();
+    unsigned long _deltaTime = curTime - _exitLoopTime;
+
+    // This next section is for debugging the Spark
+    // We measure the time it takes for the Spark to return control to
+    // the loop.  We calculate the average for 1000 iterations and then
+    // report if the average is ever exceeded.
+
+#if 1
+    // Reset the re-entry time to 1s every rollover of cycle count
+    if (_loopCycleCount == 0)
+	_loopReEntryTime = 1000;
+    else if (_loopCycleCount < 100)
+	_loopReEntryTime += _deltaTime;
+
+    // Lets time how long it takes to re-enter the loop
+    // and register an error if it is exceeded by 2x
+    if ((_loopCycleCount > 100) && (_deltaTime > (_loopReEntryTime << 1))) {
+	SerialCurrentTime();
+	Serial.print(" - loop ReEntry exceeded [");
+	Serial.print(++_loopErrorCount);
+	Serial.print("] t = ");
+	Serial.print(_deltaTime);
+	Serial.println("ms");
+    }
+
+    // Lets average the first 100 cycles to determine the re-entry time
+    if (++_loopCycleCount == 100) {
+	_loopReEntryTime /= 100;
+	SerialCurrentTime();
+	Serial.print(" - loop ReEntry Cycle Time = ");
+	Serial.print(_loopReEntryTime);
+	Serial.println("ms");
+    }
+    // end of Spark loop timing debug section
+#endif
 
     // Lets sync with the network time once a day
     if (curTime - lastSync > ONE_DAY_MILLIS) {
-        D(Serial.print("Sync Time.\n");)
+        D(SerialCurrentTime();)
+        D(Serial.print(" - spark cloud time sync.\r\n");)
         Spark.syncTime();
         lastSync = millis();
     }
@@ -254,16 +341,16 @@ void loop() {
     if (curTime > next_sensor_sample_time) {
         // Get the sensor data and print its value.
         sensors_event_t event;
-        D2(sensor_t sensor;)
+        DD2(sensor_t sensor;)
         for(int n = 0; n < _num_sensors; n++) {
             _sensor[n]->getEvent(&event);
-            D2(_sensor[n]->getSensor(&sensor);)
-            D2(_sensor[n]->printSensorEvent(&event, sensor.name);)
+            DD2(_sensor[n]->getSensor(&sensor);)
+            DD2(_sensor[n]->printSensorEvent(&event, sensor.name);)
         }
         next_sensor_sample_time = curTime + delayMS;
     }
 
-    // check if we need to send to the database
+    // check if we need to send the sensor data to database
     if (curTime > next_db_update_time) {
 	// Get sensor data and send to Phant
         sensor_t sensor;
@@ -278,11 +365,18 @@ void loop() {
 
         // Send data to Phant database
         int n;
-        for (n = 0; n < OSBH_RECONNECT_LIMIT; n++)
-            if (stream1.sendData()) break;
+        int _ret;
+        for (n = 0; n < OSBH_RECONNECT_LIMIT; n++) {
+            if (_ret = stream1.sendData()) break;
+            delay(500);
+        }
 
-        D(Serial.println(Time.timeStr());)
-        D(Serial.print("Sample ["); Serial.print(++_s);)
+        // If we were unsuccessful sending the data clear the buffer
+        if (!_ret) stream1.begin();
+
+        // Lets print the time it took to send to the database
+        D(SerialCurrentTime();)
+        D(Serial.print(" - sample ["); Serial.print(++_s);)
         D(Serial.print("] Time to send stream = ");)
         D(float _f = (millis() - _ts) / 1000;)
         D(Serial.print(_f, 2);)
@@ -296,5 +390,5 @@ void loop() {
 
         next_db_update_time = curTime + (OSBH_REPORT_FREQUENCY * 1000L);
     }
-    
+    _exitLoopTime = millis();	// save the time we exit our loop
 }
