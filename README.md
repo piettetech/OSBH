@@ -37,4 +37,9 @@ Select Flash
 The following diagram shows you how to connect your sensors to the core
 ![alt tag](./OSBH_Wiring.png)
 
+**License**
+--------
+This application contains several libraries, so some of the libraries have their own license.  Check the header of the .cpp and .h files for the specific details.
+
+The main application is released under the GNU General Public License V3.0
 
