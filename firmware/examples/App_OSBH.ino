@@ -3,12 +3,9 @@
     Open Source Beehives Sensor Kit Alpha v1.0
 
     Written by Scott Piette (Piette Technologies) October 4, 2014
-    Copyright (c) 2014 Scott Piette (scott.piette@gmail.com)
     Developed for the Open Source Beehives Project
          (http://www.opensourcebeehives.net)
-
-    This software is released under the following license:
-  	GPL v3 (http://www.gnu.org/licenses/gpl.html)
+    Copyright (c) 2014 Open Source Beehives Project
 
     Beehive monitor using DHT and DS sensors
     Written for Spark Core (www.spark.io)
