@@ -5,7 +5,7 @@
 Developed for Open Source Beehives Project
 http://opensourcebeehives.net
 
-Some files are Copyright 2014 Scott Piette (scott.piette@gmail.com)
+Some files are Copyright 2014 Scott Piette (scott.piette@gmail.com) <br>
 Main example is Copyright 2014 Open Source Beehives Project (www.opensourcebeehives.net)
 
 **Spark Core Alpha 0.2 Version**
@@ -41,7 +41,4 @@ The following diagram shows you how to connect your sensors to the core
 
 **License**
 --------
-This application contains several libraries, so some of the libraries have their own license.  Check the header of the .cpp and .h files for the specific details.
-
-The main application is released under the [GNU General Public License v3.0](./LICENSE)
-
+This application contains several libraries and files.  Check the header of the .cpp and .h files for the specific details on the licenses.
