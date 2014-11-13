@@ -41,4 +41,4 @@ The following diagram shows you how to connect your sensors to the core
 
 **License**
 --------
-This application contains several libraries and files.  Check the header of the .cpp and .h files for the specific details on the licenses.
+This application contains several libraries and files.  Check the comments section of the .cpp and .h files for the specific details on the licenses.
