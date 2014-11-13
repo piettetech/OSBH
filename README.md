@@ -1,13 +1,14 @@
 #Open Source Beehives Project #
-#Alpha Sensor Kit 1.0 #
+#Alpha Sensor Kit 0.2 #
 ====================================================
 
 Developed for Open Source Beehives Project
 http://opensourcebeehives.net
 
-Copyright 2014 Scott Piette (scott.piette@gmail.com)
+Some files are Copyright 2014 Scott Piette (scott.piette@gmail.com)
+Main example is Copyright 2014 Open Source Beehives Project (www.opensourcebeehives.net)
 
-**Spark Core Alpha 1.0 Version**
+**Spark Core Alpha 0.2 Version**
 The Alpha sensor kit uses 2x DHT22 Temperature and Humidity sensors and 2x DS18B20 Temperature Sensors. The application is built upon a unified sensor framework that allows for adding different sensors in the future.
 
 **List of equipment in the Alpha Version**
