@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    Open Source Beehives Sensor Kit Alpha v1.0
+    Open Source Beehives Sensor Kit Alpha v0.2
 
     Written by Scott Piette (Piette Technologies) October 4, 2014
     Developed for the Open Source Beehives Project
