@@ -24,7 +24,7 @@ Data is collected every ten minutes and reported to a internet server running th
 The application can be found under the Spark Web IDE as "OSBH"
 
 ```
-Login to your Spark accuont at www.spark.io/build
+Login to your Spark account at www.spark.io/build
 Select "Libraries"
 Select "OSBH"
   NOTE: app-osbh.ino will be the first in the list
@@ -36,8 +36,15 @@ Select "Flash"
 
 **Hardware**
 --------
+***solderless breadboard version***
+
 The following diagram shows you how to connect your sensors to the core
 ![alt tag](./OSBH_Wiring.png)
+
+***solder the alpha PCB board***
+files for milling the board and eagle schematics under hardware/alpha_board
+![alt tag](./hardware/alpha_board/milling_images_alphaboard/OSBH_alpha_board.png)
+
 
 **License**
 --------
