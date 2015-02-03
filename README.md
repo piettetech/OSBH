@@ -42,6 +42,7 @@ The following diagram shows you how to connect your sensors to the core
 ![alt tag](./OSBH_Wiring.png)
 
 ***solder the alpha PCB board***
+
 files for milling the board and eagle schematics under hardware/alpha_board
 ![alt tag](./hardware/alpha_board/milling_images_alphaboard/OSBH_alpha_board.png)
 
