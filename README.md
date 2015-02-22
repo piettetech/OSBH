@@ -1,5 +1,5 @@
 #Open Source Beehives Project #
-#Alpha Sensor Kit 0.2 #
+#Alpha Sensor Kit 0.4 #
 ====================================================
 
 Developed for Open Source Beehives Project
@@ -8,43 +8,51 @@ http://opensourcebeehives.net
 Some files are Copyright 2014 Scott Piette (scott.piette@gmail.com) <br>
 Main example is Copyright 2014 Open Source Beehives Project (www.opensourcebeehives.net)
 
-**Spark Core Alpha 0.2 Version**
-The Alpha sensor kit uses 2x DHT22 Temperature and Humidity sensors and 2x DS18B20 Temperature Sensors. The application is built upon a unified sensor framework that allows for adding different sensors in the future.
+**Spark Core Alpha 0.4 Version**
+
+The Alpha sensor kit is able to measure:
+
+* Temperature
+* Humidity
+* Weight
+* Audio frequency
+
+It uses 2x DHT22 Temperature and Humidity sensors and 2x DS18B20 Temperature Sensors. 
+
+The application is built upon a unified sensor framework that allows for adding different sensors in the future.
+NOTE: v0.4 implements the weight and audio sensors without the unified sensor framework -> will be done in the future.
 
 **List of equipment in the Alpha Version**
 
 * (1) DHT22 sensor is used for monitoring outdoor Temperature and Humidity
 * (1) DHT22 sensor is used for monitoring hive Temperature and Humidity
 * (2) DS18B20 sensors are for monitoring Temperatures in other locations inside the beehive.
+* (1) H30A Load Cell is used for measuring weight of the hive
+* (1) Microphone is used to record bees inside the hive 
+* (1) microSD CARD to store data
 
 Data is collected every ten minutes and reported to a internet server running the SparkFun Phant database.
+In Parallel Data can be saved offline to the SD Card.
+
+![alt tag](./concept.png)
 
 **Installation**
 ------------
-The application can be found under the Spark Web IDE as "OSBH"
+install spark-client software and compile the files included in spark.include via
 
-```
-Login to your Spark account at www.spark.io/build
-Select "Libraries"
-Select "OSBH"
-  NOTE: app-osbh.ino will be the first in the list
-Select "USE THIS EXAMPLE"
-Select "Save"
-Select "Verify"
-Select "Flash"
-```
+spark compile firmware OSBH.bin
+
+flash the spark via internet or usb connection
+
+sudo spark flash --usb OSBH.bin
+
 
 **Hardware**
 --------
-***solderless breadboard version***
-
-The following diagram shows you how to connect your sensors to the core
-![alt tag](./OSBH_Wiring.png)
 
 ***solder the alpha PCB board***
 
-files for milling the board and eagle schematics under hardware/alpha_board
-![alt tag](./hardware/alpha_board/milling_images_alphaboard/OSBH_alpha_board.png)
+find the eagle schematics under hardware
 
 
 **License**

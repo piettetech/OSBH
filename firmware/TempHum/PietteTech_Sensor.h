@@ -49,6 +49,7 @@
 #define SENSORS_GAUSS_TO_MICROTESLA       (100)                   /**< Gauss to micro-Tesla multiplier */
 
 /** Sensor types */
+/** create a enum lookuptable for the compiler - making the whole code more human readable */
 typedef enum
 {
   SENSOR_TYPE_ACCELEROMETER         = (1),   /**< Gravity + linear acceleration */

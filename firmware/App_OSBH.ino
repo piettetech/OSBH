@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*!
+/*
     Open Source Beehives Sensor Kit Alpha v0.2
 
     Written by Scott Piette (Piette Technologies) October 4, 2014
@@ -27,10 +27,14 @@
 
 #include "application.h"
 #include "math.h"
-#include "OSBH/PietteTech_Phant.h"
-#include "OSBH/PietteTech_DSX_U.h"
-#include "OSBH/PietteTech_DHT_U.h"
-#include "OSBH/PietteTech_DHT.h"
+#include "PietteTech_Phant.h"
+#include "PietteTech_DSX_U.h"
+#include "PietteTech_DHT_U.h"
+#include "PietteTech_DHT.h"
+#include "audio.h"
+#include "weighing.h"
+#include "sd-card-library.h"
+
 
 /**************************************************************************/
 /*!
@@ -41,15 +45,18 @@
 #define OSBH_RECONNECT_LIMIT    10       // # times to try sending data
 #define OSBH_REPORT_FREQUENCY 10 * 60	 // Report data every ## seconds
 
+//disable wifi at Spark Startup
+SYSTEM_MODE(SEMI_AUTOMATIC);
+
 /**************************************************************************/
 /*!
         Program debug options
 */
 /**************************************************************************/
-//#define WAIT_FOR_KEYPRESS		 // wait for keypress in setup
-#define SERIAL_DEBUG  1		         // 1 = timing, 2 = sensor
+#define WAIT_FOR_KEYPRESS		 // wait for keypress in setup
+#define SERIAL_DEBUG  2		         // 1 = timing, 2 = sensor , uncomment for no debugging
 #if defined(SERIAL_DEBUG)
-#define D(x) x
+#define D(x) x						// build debug wrapper function
 #else
 #define D(x)
 #endif
@@ -74,14 +81,14 @@ unsigned long _exitLoopTime;	// time we exit our loop
         DHT Device Driver Initialization
 */
 /**************************************************************************/
-#define DHTPIN        3         // Pin for internal DHT sensor.
+#define DHTPIN        4         // Pin for internal DHT sensor.
 #define DHTTYPE       DHT22     // DHT 22 (AM2302)
-#define DHTBPIN       4         // Pin for external DHT sensor.
+#define DHTBPIN       5         // Pin for external DHT sensor.
 #define DHTBTYPE      DHT22     // DHT 22 (AM2301)
-void dht_wrapper();             // must be declared before object initialization
+void dht_wrapper();             // must be declared before object initialization Device 1
 PietteTech_DHT dht(DHTPIN, DHTTYPE, dht_wrapper);
 void dht_wrapper() { dht.isrCallback(); }// This wrapper calls isr
-void dht_wrapperB();            // must be declared before object initialization
+void dht_wrapperB();            // must be declared before object initialization Device 2
 PietteTech_DHT dhtB(DHTBPIN, DHTBTYPE, dht_wrapperB);
 void dht_wrapperB() { dhtB.isrCallback(); }// This wrapper calls isr
 
@@ -101,7 +108,7 @@ PietteTech_DHT_U _dht_u[4];          // Inside & Outside Temperature & Humidity
 */
 /**************************************************************************/
 #define MAX_DSX_DEVICES  2           // Max # devices we can scan for
-#define ONEWIREPIN   2               // Pin connected to sensors.
+#define ONEWIREPIN   3               // Pin connected to sensors.
 OneWire one(ONEWIREPIN);             // - 4.7K pull-up resistor to 3.3v necessary
 uint8_t ds_addr[8*MAX_DSX_DEVICES];  // Rom addresses of DSXXXX sensors
 byte ds_num;                         // # sensors found
@@ -154,6 +161,53 @@ unsigned long next_sensor_sample_time;	 // next time to read sensors
 
 /**************************************************************************/
 /*!
+    Audio Sensor Initialisation
+*/
+/**************************************************************************/
+
+int MICROPHONE = 10 ; // A0 on spark Core
+int FFT_SIZE = 128 ;//FFT Bucket Size (32,64,128,256 - higher means more frequency resolution)
+int SAMPLEDELAY = 600 ;//Delay for sampling in microseconds f = 1/t*10^6
+
+
+
+/**************************************************************************/
+/*!
+    Weighning Sensor Initialisation
+*/
+/**************************************************************************/
+// Max size of the buffer to calculate the average
+// define stackMax 12		size of the average stack
+
+// Pin out defs
+int ADSK = D7;
+int ADDO = D6;
+//int TARE = D4;		// Tare pin not implemented yet
+
+// init defaults for scale. Set via cal() function or manually by evaluating sensor data
+int offset = 8400988;
+int scale = 133/3;
+int refWeight = 141;
+
+/**************************************************************************/
+/*!
+    SD-Card Initialisation
+*/
+/**************************************************************************/
+
+File myFile;
+
+bool SD_attached = true; // define if you have a SD attached or not
+
+// SOFTWARE SPI pin configuration - modify as required
+// The default pins are the same as HARDWARE SPI
+const uint8_t chipSelect = A2;    // Also used for HARDWARE SPI setup
+const uint8_t mosiPin = A5;
+const uint8_t misoPin = A4;
+const uint8_t clockPin = A3;
+
+/**************************************************************************/
+/*!
     OSBH global variables and defines
 */
 /**************************************************************************/
@@ -177,7 +231,7 @@ unsigned long lastSync = millis();	// last time we sync'd time
 */
 /**************************************************************************/
 //Phant::Stream stream1("<<host>>", "<<Public Key>>", "<<Private Key>>");
-Phant::Stream stream1("data.sparkfun.com", "OGw6o7Z7AWsWVEZlEjj6", "8b2zAJPJrNFoB2VE2qqZ");
+Phant::Stream stream1("data.osbh.smartcitizen.me", "OGw6o7Z7AWsWVEZlEjj6", "8b2zAJPJrNFoB2VE2qqZ");
 int _ret;                                // Return error code
 D(int _s;)                               // Count of stream send attempts
 unsigned long next_db_update_time;	 // next time to update phant db
@@ -200,6 +254,7 @@ void SerialCurrentTime() {
     D(Serial.print(buf);)
 }
 
+
 /**************************************************************************/
 /*
         Function:  setup
@@ -208,20 +263,61 @@ void SerialCurrentTime() {
 void setup() {
     int n;
 
+
     Serial.begin(9600);
-#if defined(WAIT_FOR_KEYPRESS)
-    while(!Serial.available()) {
+#if defined(WAIT_FOR_KEYPRESS) // this is included for debugging mode. Entering a letter is not the usual way, but otherwise wouldn't work for all linux serial communication
+    char check = 'o';
+    while(check != 'a') {
 	delay(500);
-	SerialCurrentTime();
-	Serial.println(" press any key to begin");
+	Serial.println(" enter <a> to begin or <w> to enable wifi"); // Entering a letter is not the usual way, but otherwise wouldn't work for all linux serial communications
+	check = Serial.read();
+	if(check == 'w') {
+		WiFi.on();
+		Spark.connect();
+		if(Spark.connected()) {
+			Serial.println("online!");
+		}
+	}
 	Spark.process();  // keep the spark happy
 	delay(500);
     }
 #endif
+	// reserve memory for FFT (audio analysis)
+	FFTinit();
+	
+  // configure pinsto be an input or output for weighning sensor
+    pinMode(ADDO, INPUT);
+    pinMode(ADSK, OUTPUT);
+    //pinMode(TARE, INPUT);
+    resetAD();
 
+/**************************************************************************/
     // Initialize device.
     Serial.println("\n\rOpen Source Beehives Sensor Kit Alpha v1.0");
     Serial.print("\n\r");
+
+	if(SD_attached) {
+    // check SD-Card support
+      Serial.print("Initializing SD card...");
+   
+		// Initialize HARDWARE SPI with user defined chipSelect
+			if (!SD.begin(chipSelect)) {
+			Serial.println("initialization failed!");
+			SD_attached = false;
+			return;
+		}
+
+			//  Comment out above lines and uncomment following lines to use SOFTWARE SPI
+			/*
+			  // Initialize SOFTWARE SPI
+			  if (!SD.begin(mosiPin, misoPin, clockPin, chipSelect)) {
+				Serial.println("initialization failed!");
+				return;
+			  }
+			*/
+
+		Serial.println("initialization done.");
+	}
 
     // Scan the OneWire bus for devices
     Serial.print("Scanning for DSX devices - ");
@@ -256,32 +352,36 @@ void setup() {
         delayMS = sensor.min_delay / 1000;
     }
 
+    
+    
+    
+	// only if we are online
+	if(Spark.connected()) {
+    // Setup the Phant interface
+    stream1.begin();
     // Lets sync up our time
     Spark.syncTime();
     lastSync = millis();
-    
-    unsigned long _ts = millis();
-    // Setup the Phant interface
-    stream1.begin();
+	}
+	unsigned long _ts = millis();
 
-#if defined(CLEAR_STREAM_ON_START)
-    //clearing previous stream values
-    while(!(_ret = stream1.clearStream())) {
-    	Serial.println("Stream could not be cleared (connection failed)");
-        delay(5000);
-        _ts = millis();
-    }
-    Serial.println("Stream successfully cleared");
-    Serial.print("Time to clear stream = ");
-    float _f = (millis() - _ts) / 1000;
-    Serial.print(_f, 2);
-    Serial.println("s");
-#endif      // CLEAR_STREAM_ON_START
-
-    // Setup the time for the next sensor read and database update
-    next_sensor_sample_time = millis() + delayMS;
-    next_db_update_time = next_sensor_sample_time;
-}
+	#if defined(CLEAR_STREAM_ON_START)
+		//clearing previous stream values
+		while(!(_ret = stream1.clearStream())) {
+			Serial.println("Stream could not be cleared (connection failed)");
+			delay(5000);
+			_ts = millis();
+		}
+		Serial.println("Stream successfully cleared");
+		Serial.print("Time to clear stream = ");
+		float _f = (millis() - _ts) / 1000;
+		Serial.print(_f, 2);
+		Serial.println("s");
+	#endif      // CLEAR_STREAM_ON_START
+		// Setup the time for the next sensor read and database update
+		next_sensor_sample_time = 1000 + delayMS; //changed from millis() to 1000
+		next_db_update_time = next_sensor_sample_time;
+	}
 
 /**************************************************************************/
 /*
@@ -298,7 +398,7 @@ void loop() {
     // the loop.  We calculate the average for 1000 iterations and then
     // report if the average is ever exceeded.
 
-#if 1
+/*#if 1
     // Reset the re-entry time to 1s every rollover of cycle count
     if (_loopCycleCount == 0)
 	_loopReEntryTime = 1000;
@@ -325,7 +425,7 @@ void loop() {
 	Serial.println("ms");
     }
     // end of Spark loop timing debug section
-#endif
+#endif*/
 
     // Lets sync with the network time once a day
     if (curTime - lastSync > ONE_DAY_MILLIS) {
@@ -337,6 +437,7 @@ void loop() {
 
     if (curTime > next_sensor_sample_time) {
         // Get the sensor data and print its value.
+        _num_sensors = 3;
         sensors_event_t event;
         DD2(sensor_t sensor;)
         for(int n = 0; n < _num_sensors; n++) {
@@ -344,11 +445,54 @@ void loop() {
             DD2(_sensor[n]->getSensor(&sensor);)
             DD2(_sensor[n]->printSensorEvent(&event, sensor.name);)
         }
+        //print weight value
+        DD2(Serial.print("Value in g:     ");)
+        DD2(Serial.println( ADRead());)
+        //perform audio analysis
+        DD2(updateFFT();)
+        
+
+        
+        // save data to SD CARD
+        myFile = SD.open("OSBH.txt", FILE_WRITE);
+			// if the file opened okay, write to it:
+			  if (myFile) {
+				char dataString[100] = "";
+				Serial.print("savin to OSBH.txt...");
+				//dataString += String(sensor);
+				sprintf(dataString, "weight: %d", ADRead() );
+				myFile.println(dataString); 
+				for(int n = 0; n < _num_sensors; n++) {
+				_sensor[n]->getEvent(&event);
+				myFile.println(event.data[0]);
+				}
+			  // close the file:
+				myFile.close();
+				Serial.println("done.");
+			  } else {
+				// if the file didn't open, print an error:
+				Serial.println("error opening OSBH.txt");
+			  }
+			    // re-open the file for reading:
+				  myFile = SD.open("OSBH.txt");
+				  if (myFile) {
+					Serial.println("OSBH.txt:");
+			     // read from the file until there's nothing else in it:
+					while (myFile.available()) {
+					  Serial.write(myFile.read());
+					}
+					// close the file:
+					myFile.close();
+				}
+				Delay(5000);
+		
         next_sensor_sample_time = curTime + delayMS;
     }
+    
+    
 
     // check if we need to send the sensor data to database
-    if (curTime > next_db_update_time) {
+    if (curTime > next_db_update_time && Spark.connected()) {
 	// Get sensor data and send to Phant
         sensor_t sensor;
         sensors_event_t event;
@@ -388,4 +532,4 @@ void loop() {
         next_db_update_time = curTime + (OSBH_REPORT_FREQUENCY * 1000L);
     }
     _exitLoopTime = millis();	// save the time we exit our loop
-}
+	}
