@@ -1,0 +1,7 @@
+{
+    "name": "OSBH",
+    "version": "1.0.0",
+    "author": "Ron Jacob",
+    "license": "GPL v3 (http://www.gnu.org/licenses/gpl.html)",
+    "description": "Open Source Beehives Project Alpha audio sensor for Spark"
+}
